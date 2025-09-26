@@ -25,7 +25,7 @@ import { useAuth, useFirestore } from '@/firebase';
 import { signOut } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { collection, query, onSnapshot, doc, addDoc, serverTimestamp, orderBy, CollectionReference } from 'firebase/firestore';
+import { collection, query, onSnapshot, doc, addDoc, serverTimestamp, orderBy, CollectionReference, getDocs } from 'firebase/firestore';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 
@@ -57,11 +57,11 @@ export function ChatLayout() {
         setActiveChatId(userChats[0].id);
       }
     },
-    async (error) => {
+    (error) => {
         const permissionError = new FirestorePermissionError({
           path: (chatsRef as CollectionReference).path,
           operation: 'list',
-        });
+        }, { cause: error });
         errorEmitter.emit('permission-error', permissionError);
     });
 
@@ -83,19 +83,20 @@ export function ChatLayout() {
         createdAt: serverTimestamp(),
       };
       const chatsRef = collection(firestore, 'users', currentUser.uid, 'chats');
-      try {
-        const newChatRef = await addDoc(chatsRef, newChatData);
-        currentChatId = newChatRef.id;
-        setActiveChatId(currentChatId);
-      } catch (e) {
+      
+      const newChatRef = doc(chatsRef);
+      currentChatId = newChatRef.id;
+      setActiveChatId(currentChatId);
+      
+      addDoc(chatsRef, newChatData).catch((e) => {
          const permissionError = new FirestorePermissionError({
             path: (chatsRef as CollectionReference).path,
             operation: 'create',
             requestResourceData: newChatData,
-          });
+          }, { cause: e });
           errorEmitter.emit('permission-error', permissionError);
           return;
-      }
+      });
     }
     
     if (!currentChatId) return;
@@ -104,7 +105,7 @@ export function ChatLayout() {
 
     const handleAiResponse = async (userMessage: Omit<Message, 'id'>) => {
         addDoc(messagesRef, userMessage).catch(async (e) => {
-            const permissionError = new FirestorePermissionError({ path: messagesRef.path, operation: 'create', requestResourceData: userMessage });
+            const permissionError = new FirestorePermissionError({ path: messagesRef.path, operation: 'create', requestResourceData: userMessage }, { cause: e });
             errorEmitter.emit('permission-error', permissionError);
         });
 
@@ -112,7 +113,7 @@ export function ChatLayout() {
         const response = await getChatResponse([], content);
         const assistantMessage: Omit<Message, 'id'> = { role: 'assistant', content: response, createdAt: serverTimestamp() };
         addDoc(messagesRef, assistantMessage).catch(async (e) => {
-            const permissionError = new FirestorePermissionError({ path: messagesRef.path, operation: 'create', requestResourceData: assistantMessage });
+            const permissionError = new FirestorePermissionError({ path: messagesRef.path, operation: 'create', requestResourceData: assistantMessage }, { cause: e });
             errorEmitter.emit('permission-error', permissionError);
         });
         setIsTyping(false);
@@ -124,7 +125,7 @@ export function ChatLayout() {
     } else if (type === 'file' && fileDataUri) {
         const userMessage: Omit<Message, 'id'> = { role: 'user', content: "File uploaded. Here's a summary:", createdAt: serverTimestamp() };
         addDoc(messagesRef, userMessage).catch(async (e) => {
-            const permissionError = new FirestorePermissionError({ path: messagesRef.path, operation: 'create', requestResourceData: userMessage });
+            const permissionError = new FirestorePermissionError({ path: messagesRef.path, operation: 'create', requestResourceData: userMessage }, { cause: e });
             errorEmitter.emit('permission-error', permissionError);
         });
         
@@ -132,7 +133,7 @@ export function ChatLayout() {
         const summary = await getSummary(fileDataUri);
         const assistantMessage: Omit<Message, 'id'> = { role: 'assistant', content: summary, createdAt: serverTimestamp() };
         addDoc(messagesRef, assistantMessage).catch(async (e) => {
-             const permissionError = new FirestorePermissionError({ path: messagesRef.path, operation: 'create', requestResourceData: assistantMessage });
+             const permissionError = new FirestorePermissionError({ path: messagesRef.path, operation: 'create', requestResourceData: assistantMessage }, { cause: e });
             errorEmitter.emit('permission-error', permissionError);
         });
         setIsTyping(false);

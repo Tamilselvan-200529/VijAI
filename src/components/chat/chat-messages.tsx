@@ -41,11 +41,11 @@ export function ChatMessages({ chatId }: ChatMessagesProps) {
       } as Message));
       setMessages(newMessages);
     },
-    async (error) => {
+    (error) => {
         const permissionError = new FirestorePermissionError({
           path: (messagesRef as CollectionReference).path,
           operation: 'list',
-        });
+        }, { cause: error });
         errorEmitter.emit('permission-error', permissionError);
     });
 
