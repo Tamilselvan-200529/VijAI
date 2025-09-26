@@ -4,8 +4,8 @@ import { ThemeProvider } from '@/components/theme-provider';
 import { Toaster } from '@/components/ui/toaster';
 
 export const metadata: Metadata = {
-  title: 'VijAI',
-  description: 'A full-stack chatbot web application using NVIDIA API',
+  title: 'VijAI - Your Personal AI Assistant',
+  description: 'A full-stack chatbot web application using NVIDIA API, built by Tamil.',
 };
 
 export default function RootLayout({
