@@ -2,6 +2,10 @@ import type { Metadata } from 'next';
 import './globals.css';
 import { ThemeProvider } from '@/components/theme-provider';
 import { Toaster } from '@/components/ui/toaster';
+import { FirebaseProvider } from '@/firebase/provider';
+import { FirebaseClientProvider } from '@/firebase/client-provider';
+import { initializeFirebase } from '@/firebase';
+import { getFirebaseConfig } from '@/firebase/config';
 
 export const metadata: Metadata = {
   title: 'VijAI - Your Personal AI Assistant',
@@ -13,6 +17,9 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const firebaseConfig = getFirebaseConfig();
+  const { app, auth, firestore } = initializeFirebase(firebaseConfig);
+
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
@@ -24,15 +31,19 @@ export default function RootLayout({
         />
       </head>
       <body className="font-body antialiased">
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          {children}
-          <Toaster />
-        </ThemeProvider>
+        <FirebaseProvider app={app} auth={auth} firestore={firestore}>
+          <FirebaseClientProvider>
+            <ThemeProvider
+              attribute="class"
+              defaultTheme="system"
+              enableSystem
+              disableTransitionOnChange
+            >
+              {children}
+              <Toaster />
+            </ThemeProvider>
+          </FirebaseClientProvider>
+        </FirebaseProvider>
       </body>
     </html>
   );

@@ -1,6 +1,7 @@
 import { ThemeToggle } from "@/components/theme-toggle";
 import { VijAILogo } from "@/components/chat/logo";
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 export function Header() {
   return (
@@ -10,7 +11,12 @@ export function Header() {
           <VijAILogo className="h-8 w-8 text-primary" />
           <span className="font-headline text-xl font-bold">VijAI</span>
         </Link>
-        <ThemeToggle />
+        <div className="flex items-center gap-2">
+          <Button asChild variant="ghost">
+            <Link href="/login">Login</Link>
+          </Button>
+          <ThemeToggle />
+        </div>
       </div>
     </header>
   );

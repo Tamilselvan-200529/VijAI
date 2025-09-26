@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import {
+  LogOut,
   PanelLeftOpen,
   Plus,
 } from 'lucide-react';
@@ -21,12 +22,18 @@ import type { Message, Chat } from '@/lib/types';
 import { getChatResponse, getSummary } from '@/app/actions';
 import { v4 as uuidv4 } from 'uuid';
 import { VijAILogo } from './logo';
+import { useAuth } from '@/firebase';
+import { signOut } from 'firebase/auth';
+import { useRouter } from 'next/navigation';
 
 export function ChatLayout() {
   const [chats, setChats] = useState<Chat[]>([]);
   const [activeChatId, setActiveChatId] = useState<string | null>(null);
   const [isTyping, setIsTyping] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const auth = useAuth();
+  const router = useRouter();
+
 
   useEffect(() => {
     try {
@@ -112,6 +119,13 @@ export function ChatLayout() {
     setIsSidebarOpen(false);
   };
 
+  const handleLogout = async () => {
+    if (auth) {
+      await signOut(auth);
+      router.push('/login');
+    }
+  };
+
   return (
     <div className="relative flex h-full max-h-[95vh] w-full max-w-5xl flex-col rounded-lg border bg-card shadow-lg">
       <header className="flex h-16 items-center justify-between border-b px-4">
@@ -141,6 +155,10 @@ export function ChatLayout() {
           <Button variant="outline" size="sm" onClick={startNewChat}>
             <Plus className="mr-2 h-4 w-4" />
             New Chat
+          </Button>
+          <Button variant="ghost" size="icon" onClick={handleLogout}>
+            <LogOut className="h-5 w-5" />
+            <span className="sr-only">Logout</span>
           </Button>
           <ThemeToggle />
         </div>
