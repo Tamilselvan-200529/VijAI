@@ -6,7 +6,9 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { ChatMessage } from './chat-message';
 import { TypingIndicator } from './typing-indicator';
 import { useFirestore, useAuth } from '@/firebase';
-import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
+import { collection, query, orderBy, onSnapshot, CollectionReference } from 'firebase/firestore';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 interface ChatMessagesProps {
   chatId: string | null;
@@ -38,6 +40,13 @@ export function ChatMessages({ chatId }: ChatMessagesProps) {
         ...doc.data(),
       } as Message));
       setMessages(newMessages);
+    },
+    async (error) => {
+        const permissionError = new FirestorePermissionError({
+          path: (messagesRef as CollectionReference).path,
+          operation: 'list',
+        });
+        errorEmitter.emit('permission-error', permissionError);
     });
 
     return () => unsubscribe();

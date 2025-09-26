@@ -24,6 +24,8 @@ import { Loader2, Eye, EyeOff } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { VijAILogo } from '@/components/chat/logo';
 import { Checkbox } from '@/components/ui/checkbox';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 const formSchema = z
   .object({
@@ -71,16 +73,30 @@ export default function SignupPage() {
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, values.email, values.password);
       const user = userCredential.user;
-
-      // Save user profile to Firestore
-      await setDoc(doc(firestore, "users", user.uid), {
+      
+      const userProfileData = {
         uid: user.uid,
         email: values.email,
         displayName: values.fullName,
-      });
+      };
+      
+      const userDocRef = doc(firestore, "users", user.uid);
 
-      toast({ title: 'Account Created', description: "You've successfully signed up." });
-      router.push('/chat');
+      // Save user profile to Firestore
+      setDoc(userDocRef, userProfileData)
+        .then(() => {
+            toast({ title: 'Account Created', description: "You've successfully signed up." });
+            router.push('/chat');
+        })
+        .catch(async (serverError) => {
+          const permissionError = new FirestorePermissionError({
+            path: userDocRef.path,
+            operation: 'create',
+            requestResourceData: userProfileData,
+          });
+          errorEmitter.emit('permission-error', permissionError);
+        });
+
     } catch (error: any) {
       toast({
         variant: 'destructive',
