@@ -35,7 +35,9 @@ const prompt = ai.definePrompt({
   name: 'generateChatResponsePrompt',
   input: {schema: GenerateChatResponseInputSchema},
   output: {schema: GenerateChatResponseOutputSchema},
-  prompt: `You are a helpful AI assistant. Respond to the following user message:
+  prompt: `You are a helpful AI assistant named VijAI. Your goal is to provide accurate and helpful responses to user queries.
+
+Respond to the following user message:
 
 {{{message}}}`,
 });
