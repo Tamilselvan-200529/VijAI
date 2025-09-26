@@ -4,7 +4,7 @@ import { ThemeProvider } from '@/components/theme-provider';
 import { Toaster } from '@/components/ui/toaster';
 
 export const metadata: Metadata = {
-  title: 'AetherMind AI',
+  title: 'VijAI',
   description: 'A full-stack chatbot web application using NVIDIA API',
 };
 
