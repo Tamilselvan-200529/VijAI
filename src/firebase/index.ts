@@ -9,11 +9,7 @@ interface FirebaseInstances {
   firestore: Firestore;
 }
 
-export function initializeFirebase(firebaseConfig: FirebaseConfig | null): FirebaseInstances {
-  if (!firebaseConfig) {
-    throw new Error('Firebase config is not provided.');
-  }
-
+export function initializeFirebase(firebaseConfig: FirebaseConfig): FirebaseInstances {
   const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
   const auth = getAuth(app);
   const firestore = getFirestore(app);
