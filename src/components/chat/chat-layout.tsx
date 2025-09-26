@@ -25,6 +25,7 @@ import { VijAILogo } from './logo';
 import { useAuth } from '@/firebase';
 import { signOut } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 export function ChatLayout() {
   const [chats, setChats] = useState<Chat[]>([]);
@@ -146,10 +147,10 @@ export function ChatLayout() {
               <ChatHistory chats={chats} onSelectChat={selectChat} />
             </SheetContent>
           </Sheet>
-          <div className="flex items-center gap-2">
+          <Link href="/" className="flex items-center gap-2">
              <VijAILogo className="h-8 w-8 text-primary" />
              <h1 className="font-headline text-xl font-semibold text-foreground">VijAI</h1>
-          </div>
+          </Link>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" onClick={startNewChat}>
