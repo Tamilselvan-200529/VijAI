@@ -4,11 +4,6 @@ import { ThemeProvider } from '@/components/theme-provider';
 import { Toaster } from '@/components/ui/toaster';
 import { FirebaseProvider } from '@/firebase/provider';
 import { FirebaseClientProvider } from '@/firebase/client-provider';
-import { initializeFirebase } from '@/firebase';
-import { getFirebaseConfig } from '@/firebase/config';
-import type { FirebaseApp } from 'firebase/app';
-import type { Auth } from 'firebase/auth';
-import type { Firestore } from 'firebase/firestore';
 
 export const metadata: Metadata = {
   title: 'VijAI - Your Personal AI Assistant',
@@ -20,18 +15,6 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const firebaseConfig = getFirebaseConfig();
-  let app: FirebaseApp | null = null;
-  let auth: Auth | null = null;
-  let firestore: Firestore | null = null;
-
-  if (firebaseConfig) {
-    const firebaseInstances = initializeFirebase(firebaseConfig);
-    app = firebaseInstances.app;
-    auth = firebaseInstances.auth;
-    firestore = firebaseInstances.firestore;
-  }
-
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
@@ -43,7 +26,7 @@ export default function RootLayout({
         />
       </head>
       <body className="font-body antialiased">
-        <FirebaseProvider app={app} auth={auth} firestore={firestore}>
+        <FirebaseProvider app={null} auth={null} firestore={null}>
           <FirebaseClientProvider>
             <ThemeProvider
               attribute="class"

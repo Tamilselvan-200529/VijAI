@@ -1,38 +1,47 @@
 'use client';
 
 import { FirebaseProvider, FirebaseContext } from './provider';
-import React, { useContext, useMemo } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { initializeFirebase } from './index';
 import { getFirebaseConfig } from './config';
+import type { FirebaseApp } from 'firebase/app';
+import type { Auth } from 'firebase/auth';
+import type { Firestore } from 'firebase/firestore';
+
+interface FirebaseInstances {
+  app: FirebaseApp;
+  auth: Auth;
+  firestore: Firestore;
+}
 
 export function FirebaseClientProvider({ children }: { children: React.ReactNode }) {
   const serverAppContext = useContext(FirebaseContext);
+  const [clientAppContext, setClientAppContext] = useState<FirebaseInstances | null>(null);
 
-  const clientAppContext = useMemo(() => {
-    if (typeof window !== 'undefined' && !serverAppContext) {
+  useEffect(() => {
+    if (typeof window !== 'undefined' && !serverAppContext?.app) {
       const firebaseConfig = getFirebaseConfig();
-      if (!firebaseConfig) {
-        console.error('Firebase config not found. Please set up your environment variables.');
-        return null;
+      if (firebaseConfig) {
+        const instances = initializeFirebase(firebaseConfig);
+        setClientAppContext(instances);
+      } else {
+        console.error('Firebase config not found on client. Please set up your environment variables.');
       }
-      return initializeFirebase(firebaseConfig);
     }
-    return null;
   }, [serverAppContext]);
 
-  if (serverAppContext) {
-    return <>{children}</>;
-  }
+  const contextValue = clientAppContext || serverAppContext;
 
-  if (!clientAppContext) {
-    return <>{children}</>; 
+  if (!contextValue?.app) {
+    // Firebase is not yet initialized, you can show a loader or nothing
+    return <>{children}</>;
   }
 
   return (
     <FirebaseProvider
-      app={clientAppContext.app}
-      auth={clientAppContext.auth}
-      firestore={clientAppContext.firestore}
+      app={contextValue.app}
+      auth={contextValue.auth}
+      firestore={contextValue.firestore}
     >
       {children}
     </FirebaseProvider>
