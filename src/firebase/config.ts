@@ -1,3 +1,4 @@
+
 export interface FirebaseConfig {
   apiKey: string;
   authDomain: string;
@@ -18,9 +19,8 @@ export function getFirebaseConfig(): FirebaseConfig | null {
   };
 
   if (Object.values(firebaseConfig).some(value => !value)) {
-    console.error(
-      'Firebase config is missing. Make sure all NEXT_PUBLIC_FIREBASE_* environment variables are set.'
-    );
+    // Return null silently if config is missing.
+    // The app will handle this gracefully.
     return null;
   }
 
