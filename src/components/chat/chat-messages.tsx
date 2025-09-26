@@ -14,8 +14,8 @@ interface ChatMessagesProps {
 
 export function ChatMessages({ chatId }: ChatMessagesProps) {
   const [messages, setMessages] = useState<Message[]>([]);
-  const [isTyping, setIsTyping] = useState(false); // This can be managed locally or passed as prop if needed
-  const { firestore } = useFirebase();
+  const [isTyping, setIsTyping] = useState(false);
+  const firestore = useFirestore();
   const { user } = useUser();
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
