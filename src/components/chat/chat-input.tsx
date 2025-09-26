@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, ChangeEvent } from 'react';
+import { useState, useRef, ChangeEvent, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Send, Paperclip, Mic, MicOff } from 'lucide-react';
@@ -15,13 +15,20 @@ export function ChatInput({ onSendMessage }: ChatInputProps) {
   const [text, setText] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setText(e.target.value);
-  };
-
   const { isListening, transcript, startListening, stopListening } = useSpeechRecognition({
     onResult: (result) => setText(result),
   });
+
+  // Update text area when transcript changes from speech recognition
+  useEffect(() => {
+    if (transcript) {
+      setText(transcript);
+    }
+  }, [transcript]);
+
+  const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setText(e.target.value);
+  };
 
   const handleSendClick = () => {
     if (text.trim()) {
@@ -52,6 +59,14 @@ export function ChatInput({ onSendMessage }: ChatInputProps) {
     }
   };
 
+  const toggleListening = () => {
+    if (isListening) {
+      stopListening();
+    } else {
+      startListening();
+    }
+  };
+
   return (
     <div className="relative">
       <Textarea
@@ -75,7 +90,7 @@ export function ChatInput({ onSendMessage }: ChatInputProps) {
           </Tooltip>
           <Tooltip>
              <TooltipTrigger asChild>
-                <Button type="button" size="icon" variant={isListening ? "destructive" : "ghost"} onClick={isListening ? stopListening : startListening}>
+                <Button type="button" size="icon" variant={isListening ? "destructive" : "ghost"} onClick={toggleListening}>
                     {isListening ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
                     <span className="sr-only">{isListening ? 'Stop listening' : 'Start listening'}</span>
                 </Button>

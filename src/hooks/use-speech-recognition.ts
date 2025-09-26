@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 
 interface SpeechRecognitionOptions {
   onResult: (transcript: string) => void;
@@ -16,7 +16,7 @@ export const useSpeechRecognition = ({ onResult }: SpeechRecognitionOptions) => 
     
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognition) {
-      console.warn('Speech Recognition is not supported by this browser.');
+      console.error('Speech Recognition is not supported by this browser.');
       return;
     }
 
@@ -46,28 +46,36 @@ export const useSpeechRecognition = ({ onResult }: SpeechRecognitionOptions) => 
 
     recognition.onend = () => {
       setIsListening(false);
-      setTranscript('');
+      // Do not clear transcript here, onResult has already set it
     };
     
     recognition.onerror = (event) => {
-        console.error('Speech recognition error', event.error);
+        console.error('Speech recognition error:', event.error);
         setIsListening(false);
     }
 
     recognitionRef.current = recognition;
+
+    // Cleanup on component unmount
+    return () => {
+      if (recognitionRef.current) {
+        recognitionRef.current.stop();
+      }
+    };
   }, [onResult]);
 
-  const startListening = () => {
+  const startListening = useCallback(() => {
     if (recognitionRef.current && !isListening) {
+      setTranscript(''); // Clear previous transcript
       recognitionRef.current.start();
     }
-  };
+  }, [isListening]);
 
-  const stopListening = () => {
+  const stopListening = useCallback(() => {
     if (recognitionRef.current && isListening) {
       recognitionRef.current.stop();
     }
-  };
+  }, [isListening]);
 
   return { isListening, transcript, startListening, stopListening };
 };
