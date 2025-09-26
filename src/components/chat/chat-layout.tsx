@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import {
-  Bot,
   PanelLeftOpen,
   Plus,
 } from 'lucide-react';
@@ -21,6 +20,7 @@ import { ChatMessages } from './chat-messages';
 import type { Message, Chat } from '@/lib/types';
 import { getChatResponse, getSummary } from '@/app/actions';
 import { v4 as uuidv4 } from 'uuid';
+import { VijAILogo } from './logo';
 
 export function ChatLayout() {
   const [chats, setChats] = useState<Chat[]>([]);
@@ -105,7 +105,7 @@ export function ChatLayout() {
             </SheetContent>
           </Sheet>
           <div className="flex items-center gap-2">
-             <Bot className="h-8 w-8 text-accent" />
+             <VijAILogo className="h-8 w-8 text-primary" />
              <h1 className="font-headline text-xl font-semibold text-foreground">VijAI</h1>
           </div>
         </div>

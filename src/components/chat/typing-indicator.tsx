@@ -1,12 +1,12 @@
-import { Bot } from 'lucide-react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { VijAILogo } from './logo';
 
 export function TypingIndicator() {
   return (
     <div className="flex items-start gap-3 justify-start">
       <Avatar className="h-8 w-8 shrink-0">
-        <AvatarFallback className="bg-primary text-primary-foreground">
-          <Bot className="h-5 w-5" />
+        <AvatarFallback className="bg-transparent text-primary">
+          <VijAILogo className="h-6 w-6" />
         </AvatarFallback>
       </Avatar>
       <div className="bg-muted rounded-lg p-3">
