@@ -61,7 +61,9 @@ export function ChatMessages({ chatId, isTyping }: ChatMessagesProps) {
         <div className="flex flex-1 items-center justify-center">
             <div className="text-center">
                 <h2 className="text-2xl font-semibold">Welcome to VijAI</h2>
-                <p className="text-muted-foreground">Start a new conversation to begin.</p>
+                <p className="text-muted-foreground">
+                  Hello! I'm VijAI, an advanced AI assistant powered by NVIDIA LLM, developed by Tamil. How can I help you today?
+                </p>
             </div>
         </div>
     )
