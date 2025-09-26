@@ -6,7 +6,7 @@ import { ArrowRight } from "lucide-react";
 
 export function Hero() {
   return (
-    <section className="relative py-20 md:py-32">
+    <section className="relative flex items-center justify-center py-20 md:py-32 min-h-[calc(100vh-56px)]">
        <div
         aria-hidden="true"
         className="absolute inset-0 top-0 -z-10 h-full w-full bg-background bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:3rem_3rem]"
