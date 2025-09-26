@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import {
   Bot,
-  PanelLeftClose,
   PanelLeftOpen,
   Plus,
 } from 'lucide-react';
@@ -19,37 +18,70 @@ import { ThemeToggle } from '@/components/theme-toggle';
 import { ChatHistory } from './chat-history';
 import { ChatInput } from './chat-input';
 import { ChatMessages } from './chat-messages';
-import type { Message } from '@/lib/types';
+import type { Message, Chat } from '@/lib/types';
 import { getChatResponse, getSummary } from '@/app/actions';
 import { v4 as uuidv4 } from 'uuid';
 
 export function ChatLayout() {
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [chats, setChats] = useState<Chat[]>([]);
+  const [activeChatId, setActiveChatId] = useState<string | null>(null);
   const [isTyping, setIsTyping] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
+  const activeChat = chats.find(chat => chat.id === activeChatId);
+
   const handleSendMessage = async (content: string, type: 'text' | 'file' = 'text', fileDataUri?: string) => {
+    let currentChatId = activeChatId;
+    // Create a new chat if there isn't one
+    if (!currentChatId) {
+      const newChatId = uuidv4();
+      const newChat: Chat = {
+        id: newChatId,
+        name: content.substring(0, 30), // Use first 30 chars as name
+        messages: [],
+      };
+      setChats(prev => [...prev, newChat]);
+      setActiveChatId(newChatId);
+      currentChatId = newChatId;
+    }
+    
     if (type === 'text') {
       const userMessage: Message = { id: uuidv4(), role: 'user', content };
-      setMessages((prev) => [...prev, userMessage]);
+      setChats(prev => prev.map(chat => 
+        chat.id === currentChatId ? { ...chat, messages: [...chat.messages, userMessage] } : chat
+      ));
+      
       setIsTyping(true);
       const response = await getChatResponse([], content);
       const assistantMessage: Message = { id: uuidv4(), role: 'assistant', content: response };
-      setMessages((prev) => [...prev, assistantMessage]);
+      setChats(prev => prev.map(chat => 
+        chat.id === currentChatId ? { ...chat, messages: [...chat.messages, assistantMessage] } : chat
+      ));
       setIsTyping(false);
+
     } else if (type === 'file' && fileDataUri) {
         setIsTyping(true);
         const userMessage: Message = { id: uuidv4(), role: 'user', content: "File uploaded. Here's a summary:" };
-        setMessages((prev) => [...prev, userMessage]);
+        setChats(prev => prev.map(chat => 
+          chat.id === currentChatId ? { ...chat, messages: [...chat.messages, userMessage] } : chat
+        ));
+
         const summary = await getSummary(fileDataUri);
         const assistantMessage: Message = { id: uuidv4(), role: 'assistant', content: summary };
-        setMessages((prev) => [...prev, assistantMessage]);
+        setChats(prev => prev.map(chat => 
+          chat.id === currentChatId ? { ...chat, messages: [...chat.messages, assistantMessage] } : chat
+        ));
         setIsTyping(false);
     }
   };
   
   const startNewChat = () => {
-    setMessages([]);
+    setActiveChatId(null);
+  };
+
+  const selectChat = (chatId: string) => {
+    setActiveChatId(chatId);
+    setIsSidebarOpen(false);
   };
 
   return (
@@ -69,7 +101,7 @@ export function ChatLayout() {
                   Chat History
                 </SheetTitle>
               </SheetHeader>
-              <ChatHistory />
+              <ChatHistory chats={chats} onSelectChat={selectChat} />
             </SheetContent>
           </Sheet>
           <div className="flex items-center gap-2">
@@ -90,10 +122,10 @@ export function ChatLayout() {
           <div className="p-4">
             <h2 className="font-headline text-xl font-semibold">Chat History</h2>
           </div>
-          <ChatHistory />
+          <ChatHistory chats={chats} onSelectChat={selectChat} />
         </aside>
         <div className="flex flex-1 flex-col">
-          <ChatMessages messages={messages} isTyping={isTyping} />
+          <ChatMessages messages={activeChat?.messages ?? []} isTyping={isTyping} />
           <div className="border-t p-4">
             <ChatInput onSendMessage={handleSendMessage} />
           </div>

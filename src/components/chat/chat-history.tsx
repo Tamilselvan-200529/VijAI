@@ -1,25 +1,24 @@
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Button } from "@/components/ui/button"
+import type { Chat } from "@/lib/types"
 
-export function ChatHistory() {
-  const mockHistory = [
-    "Introduction to Llama 3.1",
-    "Yesterday's standup notes",
-    "Brainstorming session",
-    "Initial project ideas",
-    "How to use NVIDIA API",
-  ]
+interface ChatHistoryProps {
+  chats: Chat[];
+  onSelectChat: (chatId: string) => void;
+}
 
+export function ChatHistory({ chats, onSelectChat }: ChatHistoryProps) {
   return (
     <ScrollArea className="h-full">
       <div className="flex flex-col gap-2 p-4 pt-0">
-        {mockHistory.map((item, index) => (
+        {chats.map((chat) => (
           <Button
-            key={index}
+            key={chat.id}
             variant="ghost"
             className="w-full justify-start overflow-hidden whitespace-nowrap text-ellipsis"
+            onClick={() => onSelectChat(chat.id)}
           >
-            {item}
+            {chat.name}
           </Button>
         ))}
       </div>

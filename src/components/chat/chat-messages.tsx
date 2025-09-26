@@ -13,14 +13,14 @@ interface ChatMessagesProps {
 
 export function ChatMessages({ messages, isTyping }: ChatMessagesProps) {
   const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null)
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
+  }
 
   useEffect(() => {
-    if (scrollAreaRef.current) {
-      scrollAreaRef.current.scrollTo({
-        top: scrollAreaRef.current.scrollHeight,
-        behavior: 'smooth',
-      });
-    }
+    scrollToBottom()
   }, [messages, isTyping]);
 
   return (
@@ -31,6 +31,7 @@ export function ChatMessages({ messages, isTyping }: ChatMessagesProps) {
             <ChatMessage key={message.id} message={message} />
           ))}
           {isTyping && <TypingIndicator />}
+          <div ref={messagesEndRef} />
         </div>
       </div>
     </ScrollArea>
