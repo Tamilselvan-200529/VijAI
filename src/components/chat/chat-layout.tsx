@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   PanelLeftOpen,
   Plus,
@@ -27,6 +27,34 @@ export function ChatLayout() {
   const [activeChatId, setActiveChatId] = useState<string | null>(null);
   const [isTyping, setIsTyping] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  useEffect(() => {
+    try {
+      const savedChats = localStorage.getItem('chats');
+      if (savedChats) {
+        setChats(JSON.parse(savedChats));
+      }
+      const savedActiveChatId = localStorage.getItem('activeChatId');
+      if (savedActiveChatId) {
+        setActiveChatId(JSON.parse(savedActiveChatId));
+      }
+    } catch (error) {
+      console.error("Failed to load chats from local storage", error);
+    }
+  }, []);
+
+  useEffect(() => {
+    try {
+      if (chats.length > 0) {
+        localStorage.setItem('chats', JSON.stringify(chats));
+      }
+      if (activeChatId) {
+        localStorage.setItem('activeChatId', JSON.stringify(activeChatId));
+      }
+    } catch (error) {
+      console.error("Failed to save chats to local storage", error);
+    }
+  }, [chats, activeChatId]);
 
   const activeChat = chats.find(chat => chat.id === activeChatId);
 
