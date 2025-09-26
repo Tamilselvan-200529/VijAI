@@ -6,6 +6,9 @@ import { FirebaseProvider } from '@/firebase/provider';
 import { FirebaseClientProvider } from '@/firebase/client-provider';
 import { initializeFirebase } from '@/firebase';
 import { getFirebaseConfig } from '@/firebase/config';
+import type { FirebaseApp } from 'firebase/app';
+import type { Auth } from 'firebase/auth';
+import type { Firestore } from 'firebase/firestore';
 
 export const metadata: Metadata = {
   title: 'VijAI - Your Personal AI Assistant',
@@ -18,7 +21,16 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   const firebaseConfig = getFirebaseConfig();
-  const { app, auth, firestore } = initializeFirebase(firebaseConfig);
+  let app: FirebaseApp | null = null;
+  let auth: Auth | null = null;
+  let firestore: Firestore | null = null;
+
+  if (firebaseConfig) {
+    const firebaseInstances = initializeFirebase(firebaseConfig);
+    app = firebaseInstances.app;
+    auth = firebaseInstances.auth;
+    firestore = firebaseInstances.firestore;
+  }
 
   return (
     <html lang="en" suppressHydrationWarning>
