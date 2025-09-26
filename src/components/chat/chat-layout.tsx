@@ -21,7 +21,7 @@ import { ChatMessages } from './chat-messages';
 import type { Message, Chat } from '@/lib/types';
 import { getChatResponse, getSummary } from '@/app/actions';
 import { VijAILogo } from './logo';
-import { useAuth, useUser, useFirestore } from '@/firebase';
+import { useAuth, useFirestore } from '@/firebase';
 import { signOut } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -32,16 +32,15 @@ export function ChatLayout() {
   const [activeChatId, setActiveChatId] = useState<string | null>(null);
   const [isTyping, setIsTyping] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const auth = useAuth();
+  const { auth, currentUser } = useAuth();
   const firestore = useFirestore();
-  const { user } = useUser();
   const router = useRouter();
 
 
   useEffect(() => {
-    if (!firestore || !user?.uid) return;
+    if (!firestore || !currentUser?.uid) return;
 
-    const chatsRef = collection(firestore, 'users', user.uid, 'chats');
+    const chatsRef = collection(firestore, 'users', currentUser.uid, 'chats');
     const q = query(chatsRef, orderBy('createdAt', 'desc'));
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -57,19 +56,19 @@ export function ChatLayout() {
     });
 
     return () => unsubscribe();
-  }, [firestore, user?.uid, activeChatId]);
+  }, [firestore, currentUser?.uid, activeChatId]);
 
 
   const activeChat = chats.find(chat => chat.id === activeChatId);
 
   const handleSendMessage = async (content: string, type: 'text' | 'file' = 'text', fileDataUri?: string) => {
-    if (!firestore || !user) return;
+    if (!firestore || !currentUser) return;
 
     let currentChatId = activeChatId;
 
     // Create a new chat if there isn't one
     if (!currentChatId) {
-      const newChatRef = await addDoc(collection(firestore, 'users', user.uid, 'chats'), {
+      const newChatRef = await addDoc(collection(firestore, 'users', currentUser.uid, 'chats'), {
         name: content.substring(0, 30),
         createdAt: serverTimestamp(),
       });
@@ -79,7 +78,7 @@ export function ChatLayout() {
     
     if (!currentChatId) return;
 
-    const messagesRef = collection(firestore, 'users', user.uid, 'chats', currentChatId, 'messages');
+    const messagesRef = collection(firestore, 'users', currentUser.uid, 'chats', currentChatId, 'messages');
 
     if (type === 'text') {
       const userMessage: Omit<Message, 'id'> = { role: 'user', content, createdAt: serverTimestamp() };

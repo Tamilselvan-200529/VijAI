@@ -15,7 +15,7 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/components/ui/use-toast';
-import { useAuth, useUser } from '@/firebase';
+import { useAuth } from '@/firebase';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -32,8 +32,7 @@ const formSchema = z.object({
 
 export default function LoginPage() {
   const { toast } = useToast();
-  const auth = useAuth();
-  const { user, loading: userLoading } = useUser();
+  const { auth, currentUser, loading: userLoading } = useAuth();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -47,10 +46,10 @@ export default function LoginPage() {
   });
 
   useEffect(() => {
-    if (!userLoading && user) {
+    if (!userLoading && currentUser) {
       router.push('/chat');
     }
-  }, [user, userLoading, router]);
+  }, [currentUser, userLoading, router]);
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     if (!auth) return;
@@ -70,7 +69,7 @@ export default function LoginPage() {
     }
   }
   
-  if (userLoading || user) {
+  if (userLoading || currentUser) {
     return (
       <div className="flex h-screen w-full items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />

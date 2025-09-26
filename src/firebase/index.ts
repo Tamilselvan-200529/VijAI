@@ -19,4 +19,3 @@ export function initializeFirebase(firebaseConfig: FirebaseConfig): FirebaseInst
 
 export * from './provider';
 export * from './client-provider';
-export * from './auth/use-user';

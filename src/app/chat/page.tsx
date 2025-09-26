@@ -1,21 +1,21 @@
 'use client';
 import { ChatLayout } from "@/components/chat/chat-layout";
-import { useUser } from "@/firebase";
+import { useAuth } from "@/firebase";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { Loader2 } from "lucide-react";
 
 export default function ChatPage() {
-  const { user, loading } = useUser();
+  const { currentUser, loading } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
-    if (!loading && !user) {
+    if (!loading && !currentUser) {
       router.push('/login');
     }
-  }, [user, loading, router]);
+  }, [currentUser, loading, router]);
 
-  if (loading || !user) {
+  if (loading || !currentUser) {
     return (
       <div className="flex h-screen w-full items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />

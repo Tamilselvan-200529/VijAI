@@ -8,7 +8,6 @@ import { Button } from '@/components/ui/button';
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -16,7 +15,7 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/components/ui/use-toast';
-import { useAuth, useUser, useFirestore } from '@/firebase';
+import { useAuth, useFirestore } from '@/firebase';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
 import { useRouter } from 'next/navigation';
@@ -43,9 +42,8 @@ const formSchema = z
 
 export default function SignupPage() {
   const { toast } = useToast();
-  const auth = useAuth();
+  const { auth, currentUser, loading: userLoading } = useAuth();
   const firestore = useFirestore();
-  const { user, loading: userLoading } = useUser();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
@@ -62,10 +60,10 @@ export default function SignupPage() {
   });
 
   useEffect(() => {
-    if (!userLoading && user) {
+    if (!userLoading && currentUser) {
       router.push('/chat');
     }
-  }, [user, userLoading, router]);
+  }, [currentUser, userLoading, router]);
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     if (!auth || !firestore) return;
@@ -94,7 +92,7 @@ export default function SignupPage() {
     }
   }
 
-  if (userLoading || user) {
+  if (userLoading || currentUser) {
     return (
       <div className="flex h-screen w-full items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />

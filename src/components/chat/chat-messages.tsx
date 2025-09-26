@@ -5,7 +5,7 @@ import type { Message } from '@/lib/types';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { ChatMessage } from './chat-message';
 import { TypingIndicator } from './typing-indicator';
-import { useFirestore, useUser } from '@/firebase';
+import { useFirestore, useAuth } from '@/firebase';
 import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
 
 interface ChatMessagesProps {
@@ -16,7 +16,7 @@ export function ChatMessages({ chatId }: ChatMessagesProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isTyping, setIsTyping] = useState(false);
   const firestore = useFirestore();
-  const { user } = useUser();
+  const { currentUser } = useAuth();
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   const scrollToBottom = () => {
@@ -24,12 +24,12 @@ export function ChatMessages({ chatId }: ChatMessagesProps) {
   }
 
   useEffect(() => {
-    if (!firestore || !user || !chatId) {
+    if (!firestore || !currentUser || !chatId) {
       setMessages([]);
       return;
     }
 
-    const messagesRef = collection(firestore, 'users', user.uid, 'chats', chatId, 'messages');
+    const messagesRef = collection(firestore, 'users', currentUser.uid, 'chats', chatId, 'messages');
     const q = query(messagesRef, orderBy('createdAt'));
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -41,7 +41,7 @@ export function ChatMessages({ chatId }: ChatMessagesProps) {
     });
 
     return () => unsubscribe();
-  }, [firestore, user, chatId]);
+  }, [firestore, currentUser, chatId]);
 
   useEffect(() => {
     scrollToBottom()
