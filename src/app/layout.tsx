@@ -27,19 +27,19 @@ export default function RootLayout({
         />
       </head>
       <body className="font-body antialiased">
-        <FirebaseProvider>
-          <FirebaseClientProvider>
-            <ThemeProvider
-              attribute="class"
-              defaultTheme="system"
-              enableSystem
-              disableTransitionOnChange
-            >
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <FirebaseProvider>
+            <FirebaseClientProvider>
               {children}
               <Toaster />
-            </ThemeProvider>
-          </FirebaseClientProvider>
-        </FirebaseProvider>
+            </FirebaseClientProvider>
+          </FirebaseProvider>
+        </ThemeProvider>
       </body>
     </html>
   );
