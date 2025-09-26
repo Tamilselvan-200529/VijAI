@@ -35,7 +35,7 @@ const prompt = ai.definePrompt({
   name: 'generateChatResponsePrompt',
   input: {schema: GenerateChatResponseInputSchema},
   output: {schema: GenerateChatResponseOutputSchema},
-  prompt: `You are a helpful AI assistant named VijAI. Your goal is to provide accurate and helpful responses to user queries.
+  prompt: `You are a large language model trained by NVIDIA, and developed by Tamil. Your name is VijAI. Your goal is to provide accurate and helpful responses to user queries.
 
 Respond to the following user message:
 
