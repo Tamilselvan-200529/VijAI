@@ -18,7 +18,7 @@ export function Hero() {
           VijAI – Your Personal AI Assistant
         </h1>
         <p className="mx-auto mt-4 max-w-[700px] text-lg text-muted-foreground md:text-xl">
-          Chat, learn, and create with the power of VijAI. Smart. Simple. Tamil-powered.
+          Chat, learn, and create with the power of VijAI.
         </p>
         <div className="mt-8 flex justify-center">
           <Button asChild size="lg" className="group">
