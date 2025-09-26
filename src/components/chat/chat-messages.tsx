@@ -12,11 +12,11 @@ import { FirestorePermissionError } from '@/firebase/errors';
 
 interface ChatMessagesProps {
   chatId: string | null;
+  isTyping: boolean;
 }
 
-export function ChatMessages({ chatId }: ChatMessagesProps) {
+export function ChatMessages({ chatId, isTyping }: ChatMessagesProps) {
   const [messages, setMessages] = useState<Message[]>([]);
-  const [isTyping, setIsTyping] = useState(false);
   const firestore = useFirestore();
   const { currentUser } = useAuth();
   const messagesEndRef = useRef<HTMLDivElement>(null)
