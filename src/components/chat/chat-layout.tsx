@@ -20,12 +20,12 @@ import { ChatInput } from './chat-input';
 import { ChatMessages } from './chat-messages';
 import type { Message, Chat } from '@/lib/types';
 import { getChatResponse, getSummary } from '@/app/actions';
-import { v4 as uuidv4 } from 'uuid';
 import { VijAILogo } from './logo';
-import { useAuth } from '@/firebase';
+import { useAuth, useUser, useFirestore } from '@/firebase';
 import { signOut } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { collection, query, where, onSnapshot, doc, setDoc, addDoc, serverTimestamp, orderBy } from 'firebase/firestore';
 
 export function ChatLayout() {
   const [chats, setChats] = useState<Chat[]>([]);
@@ -33,80 +33,72 @@ export function ChatLayout() {
   const [isTyping, setIsTyping] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const auth = useAuth();
+  const firestore = useFirestore();
+  const { user } = useUser();
   const router = useRouter();
 
 
   useEffect(() => {
-    try {
-      const savedChats = localStorage.getItem('chats');
-      if (savedChats) {
-        setChats(JSON.parse(savedChats));
-      }
-      const savedActiveChatId = localStorage.getItem('activeChatId');
-      if (savedActiveChatId) {
-        setActiveChatId(JSON.parse(savedActiveChatId));
-      }
-    } catch (error) {
-      console.error("Failed to load chats from local storage", error);
-    }
-  }, []);
+    if (!firestore || !user?.uid) return;
 
-  useEffect(() => {
-    try {
-      if (chats.length > 0) {
-        localStorage.setItem('chats', JSON.stringify(chats));
+    const chatsRef = collection(firestore, 'users', user.uid, 'chats');
+    const q = query(chatsRef, orderBy('createdAt', 'desc'));
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const userChats: Chat[] = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      } as Chat));
+      setChats(userChats);
+
+      if (!activeChatId && userChats.length > 0) {
+        setActiveChatId(userChats[0].id);
       }
-      if (activeChatId) {
-        localStorage.setItem('activeChatId', JSON.stringify(activeChatId));
-      }
-    } catch (error) {
-      console.error("Failed to save chats to local storage", error);
-    }
-  }, [chats, activeChatId]);
+    });
+
+    return () => unsubscribe();
+  }, [firestore, user?.uid, activeChatId]);
+
 
   const activeChat = chats.find(chat => chat.id === activeChatId);
 
   const handleSendMessage = async (content: string, type: 'text' | 'file' = 'text', fileDataUri?: string) => {
+    if (!firestore || !user) return;
+
     let currentChatId = activeChatId;
+
     // Create a new chat if there isn't one
     if (!currentChatId) {
-      const newChatId = uuidv4();
-      const newChat: Chat = {
-        id: newChatId,
-        name: content.substring(0, 30), // Use first 30 chars as name
-        messages: [],
-      };
-      setChats(prev => [...prev, newChat]);
-      setActiveChatId(newChatId);
-      currentChatId = newChatId;
+      const newChatRef = await addDoc(collection(firestore, 'users', user.uid, 'chats'), {
+        name: content.substring(0, 30),
+        createdAt: serverTimestamp(),
+      });
+      currentChatId = newChatRef.id;
+      setActiveChatId(currentChatId);
     }
     
+    if (!currentChatId) return;
+
+    const messagesRef = collection(firestore, 'users', user.uid, 'chats', currentChatId, 'messages');
+
     if (type === 'text') {
-      const userMessage: Message = { id: uuidv4(), role: 'user', content };
-      setChats(prev => prev.map(chat => 
-        chat.id === currentChatId ? { ...chat, messages: [...chat.messages, userMessage] } : chat
-      ));
+      const userMessage: Omit<Message, 'id'> = { role: 'user', content, createdAt: serverTimestamp() };
+      await addDoc(messagesRef, userMessage);
       
       setIsTyping(true);
       const response = await getChatResponse([], content);
-      const assistantMessage: Message = { id: uuidv4(), role: 'assistant', content: response };
-      setChats(prev => prev.map(chat => 
-        chat.id === currentChatId ? { ...chat, messages: [...chat.messages, assistantMessage] } : chat
-      ));
+      const assistantMessage: Omit<Message, 'id'> = { role: 'assistant', content: response, createdAt: serverTimestamp() };
+      await addDoc(messagesRef, assistantMessage);
       setIsTyping(false);
 
     } else if (type === 'file' && fileDataUri) {
         setIsTyping(true);
-        const userMessage: Message = { id: uuidv4(), role: 'user', content: "File uploaded. Here's a summary:" };
-        setChats(prev => prev.map(chat => 
-          chat.id === currentChatId ? { ...chat, messages: [...chat.messages, userMessage] } : chat
-        ));
+        const userMessage: Omit<Message, 'id'> = { role: 'user', content: "File uploaded. Here's a summary:", createdAt: serverTimestamp() };
+        await addDoc(messagesRef, userMessage);
 
         const summary = await getSummary(fileDataUri);
-        const assistantMessage: Message = { id: uuidv4(), role: 'assistant', content: summary };
-        setChats(prev => prev.map(chat => 
-          chat.id === currentChatId ? { ...chat, messages: [...chat.messages, assistantMessage] } : chat
-        ));
+        const assistantMessage: Omit<Message, 'id'> = { role: 'assistant', content: summary, createdAt: serverTimestamp() };
+        await addDoc(messagesRef, assistantMessage);
         setIsTyping(false);
     }
   };
@@ -172,7 +164,7 @@ export function ChatLayout() {
           <ChatHistory chats={chats} onSelectChat={selectChat} />
         </aside>
         <div className="flex flex-1 flex-col">
-          <ChatMessages messages={activeChat?.messages ?? []} isTyping={isTyping} />
+          <ChatMessages chatId={activeChatId} />
           <div className="border-t p-4">
             <ChatInput onSendMessage={handleSendMessage} />
           </div>
