@@ -26,19 +26,19 @@ export default function RootLayout({
         />
       </head>
       <body className="font-body antialiased">
-        <FirebaseProvider app={null} auth={null} firestore={null}>
-          <FirebaseClientProvider>
-            <ThemeProvider
-              attribute="class"
-              defaultTheme="system"
-              enableSystem
-              disableTransitionOnChange
-            >
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <FirebaseProvider>
+            <FirebaseClientProvider>
               {children}
               <Toaster />
-            </ThemeProvider>
-          </FirebaseClientProvider>
-        </FirebaseProvider>
+            </FirebaseClientProvider>
+          </FirebaseProvider>
+        </ThemeProvider>
       </body>
     </html>
   );
