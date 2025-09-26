@@ -73,8 +73,8 @@ export function ChatLayout() {
             </SheetContent>
           </Sheet>
           <div className="flex items-center gap-2">
-             <Bot className="h-8 w-8 text-primary" />
-             <h1 className="font-headline text-xl font-semibold text-primary">AetherMind AI</h1>
+             <Bot className="h-8 w-8 text-accent" />
+             <h1 className="font-headline text-xl font-semibold text-foreground">AetherMind AI</h1>
           </div>
         </div>
         <div className="flex items-center gap-2">
